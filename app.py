@@ -697,29 +697,18 @@ apply_styles()
 apply_animations()
 @st.cache_data
 def make_teal_title_uri() -> str:
-    font = None
+    font_path = BASE_DIR / "DejaVuSans-Bold.ttf"
 
-    font_candidates = [
-        str(BASE_DIR / "DejaVuSans-Bold.ttf"),
-        "DejaVuSans-Bold.ttf",
-        "arialbd.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-    ]
-
-    for font_path in font_candidates:
+    try:
+        # Prefer a font included in your GitHub repository.
+        font = ImageFont.truetype(str(font_path), 96)
+    except OSError:
+        # Use Pillow's bundled default font if the file is missing.
         try:
-            font = ImageFont.truetype(font_path, 96)
-            break
-        except OSError:
-            continue
-
-    if font is None:
-        raise RuntimeError(
-            "No suitable font found. Place DejaVuSans-Bold.ttf "
-            "in the same folder as app.py."
-        )
+            font = ImageFont.load_default(size=96)
+        except TypeError:
+            # Compatibility fallback for older Pillow versions.
+            font = ImageFont.load_default()
 
     text = "PCB AI"
     padding = 8
