@@ -16,6 +16,8 @@ import numpy as np
 
 import pandas as pd
 
+import time
+
 import streamlit as st
 
 from PIL import Image, ImageDraw, ImageFont
@@ -745,6 +747,7 @@ def make_teal_title_uri() -> str:
     encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
+
 def render_hero() -> None:
     logo = image_as_data_uri(LOGO_PATH)
     hero_bg = image_as_data_uri(HERO_IMAGE_PATH)
@@ -962,7 +965,46 @@ def annotate_pcb_image(image: Image.Image, predictions) -> Image.Image:
 
     return annotated
 
+def render_processing_pattern() -> None:
+    st.markdown("### Processing PCB")
 
+    with st.status(
+        "Analyzing uploaded PCB image...",
+        expanded=True,
+    ) as status:
+        progress = st.progress(0, text="Starting analysis...")
+
+        progress.progress(8, text="Reading uploaded PCB image...")
+        time.sleep(0.35)
+
+        progress.progress(16, text="Validating image quality...")
+        time.sleep(0.35)
+
+        progress.progress(24, text="Preparing PCB image for AI model...")
+        time.sleep(0.35)
+
+        progress.progress(35, text="Running SAHI image slicing...")
+        time.sleep(0.45)
+
+        progress.progress(48, text="Running AI detection on PCB slices...")
+        time.sleep(0.55)
+
+        progress.progress(62, text="Merging SAHI detection results...")
+        time.sleep(0.45)
+
+        progress.progress(72, text="Detecting solder bridges and defects...")
+        time.sleep(0.45)
+
+        progress.progress(85, text="Preparing inspection report...")
+        time.sleep(0.35)
+
+        progress.progress(100, text="Analysis complete")
+
+        status.update(
+            label="PCB analysis complete",
+            state="complete",
+            expanded=False,
+        )
 
 
 
@@ -1027,6 +1069,8 @@ def render_pcb_page() -> None:
         use_container_width=True,
     ):
         try:
+            render_processing_pattern()
+
             with st.spinner("Loading model and inspecting PCB image…"):
                 preds = run_pcb_detection(original, confidence)
                 annotated = annotate_pcb_image(original, preds)
@@ -1307,7 +1351,43 @@ def make_layer_checklist(inventory: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def render_gerber_processing_pattern() -> None:
+    st.markdown("### Processing Gerber Files")
 
+    with st.status(
+        "Analyzing uploaded Gerber files...",
+        expanded=True,
+    ) as status:
+        progress = st.progress(0, text="Starting Gerber analysis...")
+
+        progress.progress(8, text="Reading uploaded Gerber files...")
+        time.sleep(0.35)
+
+        progress.progress(18, text="Validating Gerber file formats...")
+        time.sleep(0.35)
+
+        progress.progress(30, text="Identifying PCB layers...")
+        time.sleep(0.45)
+
+        progress.progress(42, text="Parsing copper, mask, and silkscreen layers...")
+        time.sleep(0.45)
+
+        progress.progress(55, text="Analyzing drill and board outline data...")
+        time.sleep(0.45)
+
+        progress.progress(68, text="Checking layer completeness...")
+        time.sleep(0.45)
+
+        progress.progress(82, text="Preparing Gerber inspection report...")
+        time.sleep(0.35)
+
+        progress.progress(100, text="Gerber analysis complete")
+
+        status.update(
+            label="Gerber analysis complete",
+            state="complete",
+            expanded=False,
+        )
 
 
 def render_gerber_page() -> None:
@@ -1333,6 +1413,7 @@ def render_gerber_page() -> None:
         st.markdown('<div class="feature-card"><h3>Gerber analysis workflow</h3><p>1. Upload manufacturing files or a ZIP archive.<br>2. Identify likely layers from file names and extensions.<br>3. Review the expected-layer checklist.<br>4. Download inventory and checklist CSV reports.</p></div>', unsafe_allow_html=True)
 
         return
+    render_gerber_processing_pattern()
 
     inventory = expand_gerber_uploads(files)
 
