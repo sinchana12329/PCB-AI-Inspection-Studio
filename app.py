@@ -21,6 +21,7 @@ import time
 import streamlit as st
 
 from PIL import Image, ImageDraw, ImageFont
+DEFAULT_CONFIDENCE = 0.50
 
 
 
@@ -1024,7 +1025,14 @@ def render_pcb_page() -> None:
 
     with left:
 
-        confidence = st.slider("Detection confidence threshold", 0.05, 0.95, DEFAULT_CONFIDENCE, 0.05, help="Higher values filter out lower-confidence detections.")
+        confidence = st.slider(
+    "Detection confidence threshold",
+    0.30,
+    0.95,
+    0.50,
+    0.05,
+    help="Higher values reduce false detections but may miss subtle defects."
+)
 
     with right:
 
@@ -1102,9 +1110,9 @@ def render_pcb_page() -> None:
     a, b = st.columns(2)
     a.metric("Total Detected Objects", result["count"])
     b.metric(
-        "Inspection Status",
-        "Objects Detected" if result["count"] else "No Detections",
-    )
+    "Inspection Status",
+    "Objects Detected" if result["count"] else "No Detections Above Threshold",
+)
 
     st.image(
         result["image"],
@@ -1115,8 +1123,10 @@ def render_pcb_page() -> None:
     if result["count"] == 0:
         st.info(
             "No objects were detected above the selected confidence threshold. "
-            "This does not guarantee that the PCB is defect-free."
+            "This is not a guarantee that the PCB is defect-free."
         )
+
+    st.markdown("#### Detection Details")
 
     st.markdown("#### Detection Details")
     st.dataframe(
